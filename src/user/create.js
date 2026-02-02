@@ -21,7 +21,12 @@ module.exports = function (User) {
 
 		await User.isDataValid(data);
 
-		await lock(data.username, '[[error:username-taken]]');
+		const usernameExists = await User.existsBySlug(data.userslug);
+		if (usernameExists) {
+			throw new Error(`[[error:username-taken, ${data.username}suffix]]`);
+		}
+
+		await lock(data.username, `[[error:username-taken, ${data.username}suffix]]`);
 		if (data.email && data.email !== data.username) {
 			await lock(data.email, '[[error:email-taken]]');
 		}
